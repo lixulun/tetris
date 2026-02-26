@@ -225,12 +225,29 @@ draw_when_playing :: proc(game: ^Game) {
 	}
 
 	new_board := game^.board
-	if game^.falling_x!=0 || game^.falling_y!=0 {
+	if (game^.falling_x!=0 || game^.falling_y!=0) && !rl.IsKeyPressed(rl.KeyboardKey.ENTER) {
 		render_shape(&new_board, game^.falling_shape_idx, game^.falling_x, game^.falling_y)
 	}
 	speed_rate := 0.5
 	if rl.IsKeyDown(rl.KeyboardKey.DOWN) {
 		speed_rate /= 8.0
+	}
+	if rl.IsKeyPressed(rl.KeyboardKey.ENTER) {
+		for !reach_edge(&game^.board, game^.falling_shape_idx, game^.falling_x, game^.falling_y) {
+			game^.falling_y += 1
+		}
+		game^.falling_y -= 1
+		render_shape(&new_board, game^.falling_shape_idx, game^.falling_x, game^.falling_y)
+		game^.score += 4
+		game^.board = new_board
+		eliminate(&game^.board) 
+		got_shape_idx := u8(rand.int_range(0, 28))	
+		game^.falling_shape_idx = got_shape_idx
+		game^.falling_x = CELLS_PER_ROW / 2
+		game^.falling_y = 0
+		game^.last_time = rl.GetTime()	
+		draw_board(&new_board)
+		return
 	}
 	if rl.GetTime() - game^.last_time > speed_rate {
 		if game^.falling_x==0 && game^.falling_y==0 {
