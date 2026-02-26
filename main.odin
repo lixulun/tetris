@@ -9,7 +9,7 @@ VERSION :: "0.0.1"
 
 CELL_COLOR :: rl.RED
 CELL_SIZE :: 20
-WINDOW_WIDTH :: 500 
+WINDOW_WIDTH :: 500
 WINDOW_HEIGHT :: 660
 CELLS_PER_ROW :: WINDOW_WIDTH / CELL_SIZE  // 25
 CELLS_PER_COL :: WINDOW_HEIGHT / CELL_SIZE // 33
@@ -50,7 +50,7 @@ SHAPES :: [28]Shape {
 	Shape{1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0},
 	Shape{1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0},
 	// ooo
-	//  o 
+	//  o
 	Shape{1,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0},
 	Shape{0,1,0,0,1,1,0,0,0,1,0,0,0,0,0,0},
 	Shape{0,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0},
@@ -121,12 +121,12 @@ draw_board :: proc(board: ^Board) {
 }
 
 render_start_screen_background :: proc(board: ^Board) {
-	render_shape(board, 0, 20, 30)	
-	render_shape(board, 4, 3, 4)	
-	render_shape(board, 8, 7, 10)	
-	render_shape(board, 12, 12, 5)	
-	render_shape(board, 16, 15, 15)	
-	render_shape(board, 23, 13, 20)	
+	render_shape(board, 0, 20, 30)
+	render_shape(board, 4, 3, 4)
+	render_shape(board, 8, 7, 10)
+	render_shape(board, 12, 12, 5)
+	render_shape(board, 16, 15, 15)
+	render_shape(board, 23, 13, 20)
 }
 
 draw_when_start :: proc(game: ^Game) {
@@ -153,11 +153,11 @@ reach_edge :: proc(board: ^Board, shape_idx, x, y: u8) -> bool {
 		total := 0
 		for v in board^ {
 			total += int(v)
-		}	
+		}
 		return total
 	}
 	if board_v(&new_board) - board_v(board) < 4 {
-		return true	
+		return true
 	}
 	return false
 }
@@ -167,7 +167,7 @@ turn_left :: proc(game: ^Game) {
 	new_x := game^.falling_x-1
 	if new_x < 0 do return
 	if !reach_edge(&game^.board, game^.falling_shape_idx, new_x, game^.falling_y) do game^.falling_x = new_x
-	
+
 }
 
 turn_right :: proc(game: ^Game) {
@@ -195,13 +195,13 @@ eliminate :: proc(board: ^Board) {
 					board[s] = board[s-CELLS_PER_ROW]
 				}
 				for s:=0; s<CELLS_PER_ROW; s+=1 {
-					board[s] = 0	
+					board[s] = 0
 				}
-				board^[p] = board^[p-1]	
-			}	
+				board^[p] = board^[p-1]
+			}
 			break
 		}
-		last_i = i	
+		last_i = i
 	}
 }
 
@@ -216,7 +216,7 @@ draw_when_playing :: proc(game: ^Game) {
 		if !reach_edge(&game^.board, new_shape_idx, game^.falling_x, game^.falling_y) {
 			game^.falling_shape_idx = new_shape_idx
 		}
-		
+
 	} else if rl.IsKeyDown(rl.KeyboardKey.LEFT) {
 		turn_left(game)
 
@@ -240,19 +240,19 @@ draw_when_playing :: proc(game: ^Game) {
 		render_shape(&new_board, game^.falling_shape_idx, game^.falling_x, game^.falling_y)
 		game^.score += 4
 		game^.board = new_board
-		eliminate(&game^.board) 
-		got_shape_idx := u8(rand.int_range(0, 28))	
+		eliminate(&game^.board)
+		got_shape_idx := u8(rand.int_range(0, 28))
 		game^.falling_shape_idx = got_shape_idx
 		game^.falling_x = CELLS_PER_ROW / 2
 		game^.falling_y = 0
-		game^.last_time = rl.GetTime()	
+		game^.last_time = rl.GetTime()
 		draw_board(&new_board)
 		return
 	}
 	if rl.GetTime() - game^.last_time > speed_rate {
 		if game^.falling_x==0 && game^.falling_y==0 {
 			game^.board = new_board
-			got_shape_idx := u8(rand.int_range(0, 28))	
+			got_shape_idx := u8(rand.int_range(0, 28))
 			game^.falling_shape_idx = got_shape_idx
 			game^.falling_x = CELLS_PER_ROW / 2
 			game^.falling_y = 0
@@ -260,8 +260,8 @@ draw_when_playing :: proc(game: ^Game) {
 			if reach_edge(&game^.board, game^.falling_shape_idx, game^.falling_x, game^.falling_y+1) {
 				game^.score += 4
 				game^.board = new_board
-				eliminate(&game^.board) 
-				got_shape_idx := u8(rand.int_range(0, 28))	
+				eliminate(&game^.board)
+				got_shape_idx := u8(rand.int_range(0, 28))
 				game^.falling_shape_idx = got_shape_idx
 				game^.falling_x = CELLS_PER_ROW / 2
 				game^.falling_y = 0
@@ -273,7 +273,7 @@ draw_when_playing :: proc(game: ^Game) {
 				game^.falling_y += 1
 			}
 		}
-		game^.last_time = rl.GetTime()	
+		game^.last_time = rl.GetTime()
 	}
 	draw_board(&new_board)
 }
@@ -290,7 +290,7 @@ draw_when_game_over :: proc(game: ^Game)  {
 	restart: cstring = "Press space/enter to restart"
 	restart_width := rl.MeasureText(restart, 20)
 	rl.DrawText(restart, (WINDOW_WIDTH-restart_width)/2, WINDOW_HEIGHT/2+40, 20, rl.WHITE)
-	if rl.IsKeyPressed(rl.KeyboardKey.SPACE) || rl.IsKeyPressed(rl.KeyboardKey.ENTER) { 
+	if rl.IsKeyPressed(rl.KeyboardKey.SPACE) || rl.IsKeyPressed(rl.KeyboardKey.ENTER) {
 		game^ = Game {
 			state = .Playing,
 			last_time = rl.GetTime() - 2,
@@ -317,7 +317,7 @@ main :: proc()  {
 			draw_when_playing(&game)
 		case .GameOver:
 			draw_when_game_over(&game)
-		}	
+		}
 		rl.EndDrawing()
 	}
 }
