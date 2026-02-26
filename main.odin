@@ -17,11 +17,10 @@ CELLS_PER_COL :: WINDOW_HEIGHT / CELL_SIZE // 33
 
 Shape :: distinct [16]u8 // 4 * 4 cells
 Board :: distinct [CELLS_PER_ROW * CELLS_PER_COL]u8
-State :: enum {Start, Playing, GameOver}
 
 Game :: struct {
 	board: Board,
-	state: State,
+	state: enum {Start, Playing, GameOver},
 	score: int,
 	falling_shape_idx: u8,
 	falling_x: u8,
@@ -143,7 +142,7 @@ draw_when_start :: proc(game: ^Game) {
 	if rl.IsKeyPressed(rl.KeyboardKey.SPACE) || rl.IsKeyPressed(rl.KeyboardKey.ENTER) {
 		board: Board
 		game^.board = board
-	       	game^.state = State.Playing
+	       	game^.state = .Playing
 	}
 }
 
@@ -250,7 +249,7 @@ draw_when_playing :: proc(game: ^Game) {
 				game^.falling_x = CELLS_PER_ROW / 2
 				game^.falling_y = 0
 				if reach_edge(&game^.board, game^.falling_shape_idx, game^.falling_x, game^.falling_y+1) {
-					game^.state = State.GameOver
+					game^.state = .GameOver
 				}
 
 			} else {
@@ -276,7 +275,7 @@ draw_when_game_over :: proc(game: ^Game)  {
 	rl.DrawText(restart, (WINDOW_WIDTH-restart_width)/2, WINDOW_HEIGHT/2+40, 20, rl.WHITE)
 	if rl.IsKeyPressed(rl.KeyboardKey.SPACE) || rl.IsKeyPressed(rl.KeyboardKey.ENTER) { 
 		game^ = Game {
-			state = State.Playing,
+			state = .Playing,
 			last_time = rl.GetTime() - 2,
 		}
        	}
@@ -295,11 +294,11 @@ main :: proc()  {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.BLACK)
 		switch game.state {
-		case State.Start:
+		case .Start:
 			draw_when_start(&game)
-		case State.Playing:
+		case .Playing:
 			draw_when_playing(&game)
-		case State.GameOver:
+		case .GameOver:
 			draw_when_game_over(&game)
 		}	
 		rl.EndDrawing()
