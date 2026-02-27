@@ -31,9 +31,6 @@ jobs:
           - runner: macos-14
             target: macos-aarch64
             bin: tetris
-          - runner: ubuntu-22.04
-            target: linux-x86_64
-            bin: tetris
 
     steps:
       - name: Checkout
@@ -49,26 +46,12 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install Linux deps (raylib)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libx11-dev \
-            libxrandr-dev \
-            libxi-dev \
-            libgl1-mesa-dev \
-            libasound2-dev \
-            libxcursor-dev \
-            libxinerama-dev \
-            libxext-dev
-
       - name: Build (Windows)
         if: runner.os == 'Windows'
         run: odin build . -o:size -subsystem:windows
 
-      - name: Build (macOS/Linux)
-        if: runner.os != 'Windows'
+      - name: Build (macOS)
+        if: runner.os == 'macOS'
         run: odin build . -o:size
 
       - name: Package (Windows)
@@ -79,8 +62,8 @@ jobs:
           Move-Item "${{ matrix.bin }}" "dist/tetris.exe"
           Compress-Archive -Path "dist/tetris.exe" -DestinationPath "dist/tetris-${{ matrix.target }}.zip"
 
-      - name: Package (macOS/Linux)
-        if: runner.os != 'Windows'
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
         run: |
           mkdir -p dist
           mv "${{ matrix.bin }}" "dist/tetris"
