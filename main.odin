@@ -102,7 +102,7 @@ render_shape :: proc(board: ^Board, shape_idx, x, y: u8 ) {
 				shape := shapes[shape_idx]
 				v := shape[sy * 4 + sx]
 				if v > 0 {
-					board^[yi * CELLS_PER_ROW + xi] = 1
+					board[yi * CELLS_PER_ROW + xi] = 1
 				}
 			}
 		}
@@ -112,7 +112,7 @@ render_shape :: proc(board: ^Board, shape_idx, x, y: u8 ) {
 draw_board :: proc(board: ^Board) {
 	for xi := 0; xi < CELLS_PER_ROW; xi+=1 {
 		for yi := 0; yi < CELLS_PER_COL; yi+=1 {
-			if board^[yi * CELLS_PER_ROW + xi] > 0 {
+			if board[yi * CELLS_PER_ROW + xi] > 0 {
 				rl.DrawRectangle(i32(xi*CELL_SIZE), i32(yi*CELL_SIZE), CELL_SIZE, CELL_SIZE, CELL_COLOR)
 				rl.DrawRectangleLines(i32(xi*CELL_SIZE), i32(yi*CELL_SIZE), CELL_SIZE, CELL_SIZE, rl.WHITE)
 			}
@@ -130,8 +130,8 @@ render_start_screen_background :: proc(board: ^Board) {
 }
 
 draw_when_start :: proc(game: ^Game) {
-	render_start_screen_background(&game^.board)
-	draw_board(&game^.board)
+	render_start_screen_background(&game.board)
+	draw_board(&game.board)
 	rl.DrawRectangle(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, rl.Color{0, 0, 0, 192})
 	text: cstring = "Press space/enter to start"
 	text_width := rl.MeasureText(text, 32)
@@ -141,8 +141,8 @@ draw_when_start :: proc(game: ^Game) {
 	rl.DrawText(version, WINDOW_WIDTH-version_width-20, WINDOW_HEIGHT-30, 20, rl.WHITE)
 	if rl.IsKeyPressed(rl.KeyboardKey.SPACE) || rl.IsKeyPressed(rl.KeyboardKey.ENTER) {
 		board: Board
-		game^.board = board
-	       	game^.state = .Playing
+		game.board = board
+	       	game.state = .Playing
 	}
 }
 
@@ -151,7 +151,7 @@ reach_edge :: proc(board: ^Board, shape_idx, x, y: u8) -> bool {
 	render_shape(&new_board, shape_idx, x, y)
 	board_v :: proc(board: ^Board) -> int {
 		total := 0
-		for v in board^ {
+		for v in board {
 			total += int(v)
 		}
 		return total
@@ -164,22 +164,22 @@ reach_edge :: proc(board: ^Board, shape_idx, x, y: u8) -> bool {
 
 
 turn_left :: proc(game: ^Game) {
-	new_x := game^.falling_x-1
+	new_x := game.falling_x-1
 	if new_x < 0 do return
-	if !reach_edge(&game^.board, game^.falling_shape_idx, new_x, game^.falling_y) do game^.falling_x = new_x
+	if !reach_edge(&game.board, game.falling_shape_idx, new_x, game.falling_y) do game.falling_x = new_x
 
 }
 
 turn_right :: proc(game: ^Game) {
-	new_x := game^.falling_x+1
+	new_x := game.falling_x+1
 	if new_x >= CELLS_PER_ROW do return
-	if !reach_edge(&game^.board, game^.falling_shape_idx, new_x, game^.falling_y) do game^.falling_x = new_x
+	if !reach_edge(&game.board, game.falling_shape_idx, new_x, game.falling_y) do game.falling_x = new_x
 }
 
 fall :: proc(game: ^Game) {
-	new_y := game^.falling_y+1
+	new_y := game.falling_y+1
 	if new_y >= CELLS_PER_COL do return
-	if !reach_edge(&game^.board, game^.falling_shape_idx, game^.falling_x, new_y) do game^.falling_y = new_y
+	if !reach_edge(&game.board, game.falling_shape_idx, game.falling_x, new_y) do game.falling_y = new_y
 }
 
 eliminate :: proc(board: ^Board) {
@@ -187,7 +187,7 @@ eliminate :: proc(board: ^Board) {
 	for i:=0; i<=len(board); i+=CELLS_PER_ROW {
 		interval := 0
 		for j:=0; j<CELLS_PER_ROW; j+=1 {
-			interval += int(board^[j+last_i])
+			interval += int(board[j+last_i])
 		}
 		if interval == int(CELLS_PER_ROW) {
 			for p:=i-1; p>0; p-=CELLS_PER_ROW {
@@ -197,7 +197,7 @@ eliminate :: proc(board: ^Board) {
 				for s:=0; s<CELLS_PER_ROW; s+=1 {
 					board[s] = 0
 				}
-				board^[p] = board^[p-1]
+				board[p] = board[p-1]
 			}
 			break
 		}
@@ -208,13 +208,13 @@ eliminate :: proc(board: ^Board) {
 
 draw_when_playing :: proc(game: ^Game) {
 	buf: [32]byte = ---
-	score := fmt.bprintf(buf[:], "Score: %d", game^.score)
+	score := fmt.bprintf(buf[:], "Score: %d", game.score)
 	score_cstring := strings.clone_to_cstring(score)
 	rl.DrawText(score_cstring, 10, 10, 20, rl.WHITE)
 	if rl.IsKeyPressed(rl.KeyboardKey.UP) {
-		new_shape_idx := rotate(game^.falling_shape_idx)
-		if !reach_edge(&game^.board, new_shape_idx, game^.falling_x, game^.falling_y) {
-			game^.falling_shape_idx = new_shape_idx
+		new_shape_idx := rotate(game.falling_shape_idx)
+		if !reach_edge(&game.board, new_shape_idx, game.falling_x, game.falling_y) {
+			game.falling_shape_idx = new_shape_idx
 		}
 
 	} else if rl.IsKeyDown(rl.KeyboardKey.LEFT) {
@@ -224,56 +224,56 @@ draw_when_playing :: proc(game: ^Game) {
 		turn_right(game)
 	}
 
-	new_board := game^.board
-	if (game^.falling_x!=0 || game^.falling_y!=0) && !rl.IsKeyPressed(rl.KeyboardKey.ENTER) {
-		render_shape(&new_board, game^.falling_shape_idx, game^.falling_x, game^.falling_y)
+	new_board := game.board
+	if (game.falling_x!=0 || game.falling_y!=0) && !rl.IsKeyPressed(rl.KeyboardKey.ENTER) {
+		render_shape(&new_board, game.falling_shape_idx, game.falling_x, game.falling_y)
 	}
 	speed_rate := 0.5
 	if rl.IsKeyDown(rl.KeyboardKey.DOWN) {
 		speed_rate /= 8.0
 	}
 	if rl.IsKeyPressed(rl.KeyboardKey.ENTER) {
-		for !reach_edge(&game^.board, game^.falling_shape_idx, game^.falling_x, game^.falling_y) {
-			game^.falling_y += 1
+		for !reach_edge(&game.board, game.falling_shape_idx, game.falling_x, game.falling_y) {
+			game.falling_y += 1
 		}
-		game^.falling_y -= 1
-		render_shape(&new_board, game^.falling_shape_idx, game^.falling_x, game^.falling_y)
-		game^.score += 4
-		game^.board = new_board
-		eliminate(&game^.board)
+		game.falling_y -= 1
+		render_shape(&new_board, game.falling_shape_idx, game.falling_x, game.falling_y)
+		game.score += 4
+		game.board = new_board
+		eliminate(&game.board)
 		got_shape_idx := u8(rand.int_range(0, 28))
-		game^.falling_shape_idx = got_shape_idx
-		game^.falling_x = CELLS_PER_ROW / 2
-		game^.falling_y = 0
-		game^.last_time = rl.GetTime()
+		game.falling_shape_idx = got_shape_idx
+		game.falling_x = CELLS_PER_ROW / 2
+		game.falling_y = 0
+		game.last_time = rl.GetTime()
 		draw_board(&new_board)
 		return
 	}
-	if rl.GetTime() - game^.last_time > speed_rate {
-		if game^.falling_x==0 && game^.falling_y==0 {
-			game^.board = new_board
+	if rl.GetTime() - game.last_time > speed_rate {
+		if game.falling_x==0 && game.falling_y==0 {
+			game.board = new_board
 			got_shape_idx := u8(rand.int_range(0, 28))
-			game^.falling_shape_idx = got_shape_idx
-			game^.falling_x = CELLS_PER_ROW / 2
-			game^.falling_y = 0
+			game.falling_shape_idx = got_shape_idx
+			game.falling_x = CELLS_PER_ROW / 2
+			game.falling_y = 0
 		} else {
-			if reach_edge(&game^.board, game^.falling_shape_idx, game^.falling_x, game^.falling_y+1) {
-				game^.score += 4
-				game^.board = new_board
-				eliminate(&game^.board)
+			if reach_edge(&game.board, game.falling_shape_idx, game.falling_x, game.falling_y+1) {
+				game.score += 4
+				game.board = new_board
+				eliminate(&game.board)
 				got_shape_idx := u8(rand.int_range(0, 28))
-				game^.falling_shape_idx = got_shape_idx
-				game^.falling_x = CELLS_PER_ROW / 2
-				game^.falling_y = 0
-				if reach_edge(&game^.board, game^.falling_shape_idx, game^.falling_x, game^.falling_y+1) {
-					game^.state = .GameOver
+				game.falling_shape_idx = got_shape_idx
+				game.falling_x = CELLS_PER_ROW / 2
+				game.falling_y = 0
+				if reach_edge(&game.board, game.falling_shape_idx, game.falling_x, game.falling_y+1) {
+					game.state = .GameOver
 				}
 
 			} else {
-				game^.falling_y += 1
+				game.falling_y += 1
 			}
 		}
-		game^.last_time = rl.GetTime()
+		game.last_time = rl.GetTime()
 	}
 	draw_board(&new_board)
 }
@@ -283,7 +283,7 @@ draw_when_game_over :: proc(game: ^Game)  {
 	text_width := rl.MeasureText(text, 32)
 	rl.DrawText(text, (WINDOW_WIDTH-text_width)/2, (WINDOW_HEIGHT-32)/2-50, 32, rl.WHITE)
 	buf: [64]byte = ---
-	score := fmt.bprintf(buf[:], "Got score: %d", game^.score)
+	score := fmt.bprintf(buf[:], "Got score: %d", game.score)
 	score_cstring := strings.clone_to_cstring(score)
 	score_width := rl.MeasureText(score_cstring, 32)
 	rl.DrawText(score_cstring, (WINDOW_WIDTH-score_width)/2, WINDOW_HEIGHT/2-10, 32, rl.WHITE)
