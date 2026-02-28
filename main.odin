@@ -94,8 +94,8 @@ render_shape :: proc(board: ^Board, shape_idx, x, y: u8 ) {
 	if y < 0 || y >= CELLS_PER_COL do return
 	assert(shape_idx >= 0 && shape_idx < 28)
 	shapes := SHAPES
-	for xi := 0; xi < CELLS_PER_ROW; xi+=1 {
-		for yi := 0; yi < CELLS_PER_COL; yi+=1 {
+	for xi in 0..<CELLS_PER_ROW {
+		for yi in 0..<CELLS_PER_COL {
 			if xi >= int(x) && yi >= int(y) && xi < int(x)+4 && yi < int(y)+4 {
 				sx := xi - int(x)
 				sy := yi - int(y)
@@ -110,8 +110,8 @@ render_shape :: proc(board: ^Board, shape_idx, x, y: u8 ) {
 }
 
 draw_board :: proc(board: ^Board) {
-	for xi := 0; xi < CELLS_PER_ROW; xi+=1 {
-		for yi := 0; yi < CELLS_PER_COL; yi+=1 {
+	for xi in 0..<CELLS_PER_ROW {
+		for yi in 0..<CELLS_PER_COL {
 			if board[yi * CELLS_PER_ROW + xi] > 0 {
 				rl.DrawRectangle(i32(xi*CELL_SIZE), i32(yi*CELL_SIZE), CELL_SIZE, CELL_SIZE, CELL_COLOR)
 				rl.DrawRectangleLines(i32(xi*CELL_SIZE), i32(yi*CELL_SIZE), CELL_SIZE, CELL_SIZE, rl.WHITE)
@@ -186,7 +186,7 @@ eliminate :: proc(board: ^Board) {
 	last_i := 0
 	for i:=0; i<=len(board); i+=CELLS_PER_ROW {
 		interval := 0
-		for j:=0; j<CELLS_PER_ROW; j+=1 {
+		for j in 0..<CELLS_PER_ROW {
 			interval += int(board[j+last_i])
 		}
 		if interval == int(CELLS_PER_ROW) {
