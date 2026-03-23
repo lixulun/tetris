@@ -309,6 +309,7 @@ main :: proc()  {
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
+		defer rl.EndDrawing()
 		rl.ClearBackground(rl.BLACK)
 		switch game.state {
 		case .Start:
@@ -318,6 +319,5 @@ main :: proc()  {
 		case .GameOver:
 			draw_when_game_over(&game)
 		}
-		rl.EndDrawing()
 	}
 }
